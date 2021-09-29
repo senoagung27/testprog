@@ -1,0 +1,473 @@
+@extends('layouts.app')
+
+@section('content')
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark">Penginputan Baru</h1>
+                    </div><!-- /.col -->
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="/e-peminjamans">Home</a></li>
+                            <li class="breadcrumb-item active">Penginputan Baru</li>
+                        </ol>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                @if (('session')('tambah'))
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert"
+                            aria-hidden="true">&times;</button>
+                        <h5><i class="icon fas fa-check"></i> Sukses!!!!</h5>
+                        {{ session('tambah') }}
+                    </div>
+                @endif
+                @if (('session')('input'))
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert"
+                            aria-hidden="true">&times;</button>
+                        <h5><i class="icon fas fa-check"></i> Peringatan!!!!</h5>
+                        {{ session('input') }}
+                    </div>
+                @endif
+                @if (('session')('pinjam'))
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert"
+                            aria-hidden="true">&times;</button>
+                        <h5><i class="icon fas fa-info"></i> Peringatan!!!</h5>
+                        {{ session('pinjam') }}
+                    </div>
+                @endif
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Jenis</th>
+                                    <th>Nomor</th>
+                                    <th>Kecamatan</th>
+                                    <th>Kelurahan/Desa</th>
+                                    <th>Status</th>
+                                    <th>Ruangan</th>
+                                    <th>Lemari</th>
+                                    <th>Rak</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($dataKeranjangBaru as $data)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $data->isiJenis->nama_jenis_hak }}</td>
+                                        <td>{{ $data->nomor }}</td>
+                                        <td>{{ $data->isiKecamatan->nama }}</td>
+                                        <td>{{ $data->isiKelurahan->nama }}</td>
+                                        <td class="project-state">
+                                            @if ($data->status === 'Tersedia')
+                                                <span class="badge badge-success">{{ $data->status }}</span>
+
+                                            @else
+                                                <span class="badge badge-danger">{{ $data->status }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($data->status === 'Belum Terdaftar')
+                                                <button data-toggle="modal"
+                                                    data-target="#modal-default{{ $data->id }}">
+                                                    <i class="fa fa-building" aria-hidden="true"></i>
+                                                    Input
+                                                </button>
+                                            @else
+                                                {{ $data->isiRuangan->nama_ruangan }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($data->status === 'Belum Terdaftar')
+                                            @else
+                                                {{ $data->isiLemari->nama_lemari }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($data->status === 'Belum Terdaftar')
+                                            @else
+                                                {{ $data->isiRak->nama_rak }}
+                                            @endif
+                                        </td>
+                                        <td><a href="/e-peminjamans/hapusSertifikatBaru/{{ $data->id }}"
+                                                class="btn btn-danger" data-toggle="modal"
+                                                data-target="#modalhapus{{ $data->id }}"><i
+                                                    class="icon-nav fa fa-trash"> Hapus</i></a></td>
+                                    </tr>
+                                    <div class="modal fade" id="modal-default{{ $data->id }}">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h4 class="modal-title">Tambah Penyimpanan</h4>
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <form role="form" method="POST" action="/e-peminjamans/updateRak">
+                                                    @csrf
+                                                    <input type="hidden" name="id_keranjang" value="{{ $data->id }}">
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-4">
+                                                                <div class="form-group">
+                                                                    <label>Ruangan</label>
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text">
+                                                                                <i class="fas fa-door-closed"></i>
+                                                                            </span>
+                                                                        </div>
+                                                                        <select
+                                                                            class="form-control js-example-responsive select2-primary"
+                                                                            name="ruangan_id"
+                                                                            data-dropdown-css-class="select2-primary"
+                                                                            style="width:180px">
+                                                                            <option selected="selected" value="">-Pilihan-
+                                                                            </option>
+                                                                            @foreach ($dataRuangan as $key => $value)
+                                                                                <option value="{{ $key }}">
+                                                                                    {{ $value }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <div class="form-group">
+                                                                    <label>Lemari</label>
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text">
+                                                                                <i class="fas fa-hdd"></i>
+                                                                            </span>
+                                                                        </div>
+                                                                        <select
+                                                                            class="form-control js-example-responsive select2-primary"
+                                                                            name="lemari_id"
+                                                                            data-dropdown-css-class="select2-primary"
+                                                                            style="width:180px">
+                                                                            <option value="">Pilih Lemari</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <div class="form-group">
+                                                                    <label>Rak</label>
+                                                                    <div class="input-group">
+                                                                        <div class="input-group-prepend">
+                                                                            <span class="input-group-text">
+                                                                                <i class="fas fa-hdd"></i>
+                                                                            </span>
+                                                                        </div>
+                                                                        <select class="form-control js-example-responsive "
+                                                                            name="rak_id"
+                                                                            data-dropdown-css-class="select2-primary"
+                                                                            style="width:180px">
+                                                                            <option value="">Pilih Rak</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer justify-content-between">
+                                                        <button type="button" class="btn btn-default"
+                                                            data-dismiss="modal">Tutup</button>
+                                                        <button type="submit" class="btn btn-primary">Simpan</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <!-- /.modal-content -->
+                                        </div>
+                                        <!-- /.modal-dialog -->
+                                    </div>
+                                    <!-- Central Modal Danger Demo-->
+                                    <div class="modal fade right" id="modalhapus{{ $data->id }}" tabindex="-1"
+                                        role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                                        <form action="/e-peminjamans/hapusSertifikatBaru/{{ $data->id }}"
+                                            method="POST">
+                                            @csrf
+                                            {{ method_field('DELETE') }}
+                                            <div class="modal-dialog modal-notify modal-danger" role="document">
+                                                <!--Content-->
+                                                <div class="modal-content">
+                                                    <!--Header-->
+                                                    <div class="modal-header">
+                                                        <p class="heading">Hapus Anggota</p>
+
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                            aria-label="Close">
+                                                            <span aria-hidden="true" class="white-text">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <!--Body-->
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-3">
+                                                                <p></p>
+                                                                <p class="text-center"><i class="fas fa-trash fa-4x"></i>
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-9">
+                                                                <p>Yakin anda menghapus data dengan data ini ?</p>
+                                                                <h2><span
+                                                                        class="badge">{{ $data->nama_berkas }}</span>
+                                                                </h2>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!--Footer-->
+                                                    <div class="modal-footer justify-content-center">
+                                                        <button type="submit" class="btn btn-danger"
+                                                            style="color:white">Hapus Data <i
+                                                                class="fas fa-times-circle  ml-1"></i></button>
+                                                        <a type="button" class="btn btn-outline-danger waves-effect"
+                                                            data-dismiss="modal">No, thanks</a>
+                                                    </div>
+                                                </div>
+                                                <!--/.Content-->
+                                        </form>
+                                    </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <!-- /.tab-pane -->
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <form role="form" method="POST" action="/e-peminjamans/SimpanKeranjangSertifikat">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
+                            <div class="row">
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Jenis</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-clipboard-list"></i>
+                                                </span>
+                                            </div>
+                                            <select class="form-control select2 " name="jenis_id" required>
+                                                <option selected="selected" value="">-Pilihan-</option>
+                                                @foreach ($dataJenisHak as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->nama_jenis_hak }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Nomor</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-hashtag"></i>
+                                                </span>
+                                                <input type="text" name="nomor" data-role="tagsinput" class="input-group"
+                                                    id="reservation" placeholder="Nomor" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Kelurahan</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </span>
+                                            </div>
+                                            <select class="form-control select2 " name="kelurahan" required>
+                                                <option selected="selected" value="">-Kelurahan-</option>
+                                                @foreach ($kelurahan as $value)
+                                                    <option value="{{ $value->id }}">{{ $value->nama }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="form-group">
+                                        <label>Kecamatan</label>
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-hdd"></i>
+                                                </span>
+                                            </div>
+
+                                            <select class="form-control select2 " name="kecamatan" required>
+                                                <option value="">Kecamatan</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="py-3">
+                                        <button type="submit" class="btn btn-success fa-pull-right">
+                                            <i class="fa fa-plus" aria-hidden="true"> Tambah</i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <hr />
+                    <form role="form" method="POST" action="/e-peminjamans/SimpanSertifikatBaru">
+                        @csrf
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="py-3">
+                                    <button type="button" class="btn mb-3 mr-3 btn-success fa-pull-right">
+                                        <i class="fa fa-times-circle" aria-hidden="true"> Cancel</i></button>
+                                    <button type="submit" class="btn ml-3 btn-success fa-pull-left">
+                                        <i class="far fa-save"></i> Simpan</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                    <!-- /.tab-pane -->
+                </div>
+            </div>
+            {{-- taro section --}}
+            <!-- /.card-body -->
+
+        </section>
+    </div>
+@endsection
+@section('jsIsian')
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('select[name="ruangan_id"]').on('change', function() {
+                var cityID = jQuery(this).val();
+                if (cityID) {
+                    jQuery.ajax({
+                        url: 'dataLemari/' + cityID,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(data) {
+                            console.log(data);
+                            jQuery('select[name="lemari_id"]').empty();
+                            $('select[name="lemari_id"]').append(
+                                '<option>--- Select Lemari ---</option>');
+                            jQuery.each(data, function(key, value) {
+                                $('select[name="lemari_id"]').append('<option value="' +
+                                    key + '">' + value + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('select[name="state"]').empty();
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('select[name="lemari_id"]').on('change', function() {
+                var cityID = jQuery(this).val();
+                if (cityID) {
+                    jQuery.ajax({
+                        url: 'dataRak/' + cityID,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(data) {
+                            console.log(data);
+                            jQuery('select[name="rak_id"]').empty();
+                            $('select[name="rak_id"]').append(
+                                '<option>--- Select Rak ---</option>');
+                            jQuery.each(data, function(key, value) {
+                                $('select[name="rak_id"]').append('<option value="' +
+                                    key + '">' + value + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('select[name="state"]').empty();
+                }
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('select[name="kelurahan"]').on('change', function() {
+                var kelurahanID = jQuery(this).val();
+                if (kelurahanID) {
+                    jQuery.ajax({
+                        url: 'dataKecamatan/' + kelurahanID,
+                        type: "GET",
+                        dataType: "json",
+                        success: function(data) {
+                            console.log(data);
+                            jQuery('select[name="kecamatan"]').empty();
+                            $('select[name="kecamatan"]').append(
+                                '<option>--- Kecamatan ---</option>');
+                            jQuery.each(data, function(key, value) {
+                                $('select[name="kecamatan"]').append('<option value="' +
+                                    key + '">' + value + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('select[name="state"]').empty();
+                }
+            });
+        });
+        $(document).ready(function() {
+            $('#one').onEnter('tab');
+            $('#two').onEnter('tab');
+            $('#three').onEnter('tab');
+            $('#four').onEnter('tab');
+            $('#five').onEnter('tab');
+        });
+    </script>
+@endsection
+@section('bawah')
+    <script>
+        $(function() {
+            $("#example1").DataTable();
+            $("#example2").DataTable();
+            $("#example3").DataTable();
+            $('#example4').DataTable({
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": true,
+            });
+        });
+        //Initialize Select2 Elements
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        });
+        //Initialize Select2 Elements
+        // $('.select2').select2()
+        $(".js-example-responsive").select2({
+            width: 'resolve' // need to override the changed default
+        });
+    </script>
+@endsection
